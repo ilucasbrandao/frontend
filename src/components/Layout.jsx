@@ -4,6 +4,13 @@ import { Link, NavLink } from 'react-router-dom';
 export const Layout = ({ children }) => {
     const { user, logout } = useAuth();
 
+    const handleLogout = async () => {
+        // (Opcional: desabilitar o botão enquanto desloga, mas é tão rápido)
+        await logout();
+        // O 'AuthProvider' vai atualizar o estado, e os 'ProtectedRoutes'
+        // vão redirecionar para /login automaticamente.
+    };
+
     const navLinkClass = ({ isActive }) =>
         `px-3 py-2 rounded-md text-sm font-medium ${isActive
             ? 'bg-gray-900 text-white'
@@ -19,13 +26,19 @@ export const Layout = ({ children }) => {
 
                         {/* Logo e Links */}
                         <div className="flex items-center">
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                                 <span className="font-bold text-xl text-white">ERP {user?.schema}</span>
                             </div>
                             <div className="hidden md:block">
                                 <div className="ml-10 flex items-baseline space-x-4">
                                     <NavLink to="/" className={navLinkClass}>Dashboard</NavLink>
                                     <NavLink to="/customers" className={navLinkClass}>Clientes</NavLink>
+                                    {/* !! LINK CONDICIONAL DE ADMIN !! */}
+                                    {user && user.role === 'admin' && (
+                                        <NavLink to="/admin" className={navLinkClass}>
+                                            Admin
+                                        </NavLink>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -34,7 +47,7 @@ export const Layout = ({ children }) => {
                         <div className="flex items-center">
                             <span className="text-gray-400 text-sm mr-4">Olá, {user?.email}</span>
                             <button
-                                onClick={logout}
+                                onClick={handleLogout}
                                 className="py-2 px-3 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
                             >
                                 Sair

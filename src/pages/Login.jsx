@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const LoginPage = () => {
     const [email, setEmail] = useState('user@empresa-a.com'); // <-- Valor padrão para teste
@@ -55,6 +55,12 @@ export const LoginPage = () => {
                 >
                     {loading ? 'Entrando...' : 'Entrar'}
                 </button>
+                <p className="text-sm text-center text-gray-600 mt-6">
+                    Não tem uma conta?{' '}
+                    <Link to="/register" className="font-medium text-blue-600 hover:underline">
+                        Crie sua solicitação
+                    </Link>
+                </p>
             </form>
         </div>
     );
