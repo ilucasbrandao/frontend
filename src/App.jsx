@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { LoginPage } from './pages/Login.jsx';
-import { DashboardPage } from './pages/Dashboard.jsx';
-import { CustomersPage } from './pages/CustomersPage.jsx'; // <-- NOVO
+import { ProductsPage } from './pages/Products/ProductsPage.jsx';
+import CustomersPage from './pages/CustomersPage.jsx'; // <-- NOVO
 import { ProtectedRoute } from './components/ProtectedRoute.jsx';
 import { RegisterPage } from './pages/RegisterPage.jsx';
 import { AdminRoute } from './components/AdminRoute.jsx';
@@ -29,7 +29,7 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <ProductsPage />
           </ProtectedRoute>
         }
       />

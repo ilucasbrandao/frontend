@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import useForm from '../hooks/useForm.jsx' // IMPORT CORRIGIDA: Adicionado .jsx
+import useForm from '../hooks/useForm.js'
 import axios from 'axios'
 
 // Estado inicial do formulário
@@ -46,7 +46,7 @@ const formatCNPJ = (v = '') =>
             (m, a, b, c, d, e) => `${a}.${b}.${c}/${d}${e ? `-${e}` : ''}`
         )
 
-export const CustomerForm = ({ onSubmit, onCancel, initialData = null }) => {
+export default function CustomerForm({ onSubmit, onCancel, initialData = null }) {
     const {
         formData,
         handleChange,
@@ -375,4 +375,3 @@ export const CustomerForm = ({ onSubmit, onCancel, initialData = null }) => {
     )
 }
 
-export default CustomerForm

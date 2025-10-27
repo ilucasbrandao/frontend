@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'; // <-- 1. Importar useMemo
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Layout } from '../components/Layout';
@@ -6,26 +6,20 @@ import { Layout } from '../components/Layout';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const AdminPage = () => {
-    const { token, logout } = useAuth(); // 'token' é a dependência chave
+    const { token, logout } = useAuth();
     const [tenants, setTenants] = useState([]);
     const [loadingTenants, setLoadingTenants] = useState(true);
     const [error, setError] = useState(null);
     const [activeSessions, setActiveSessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
 
-    // --- 2. MEMORIZAR o apiClient ---
-    // Este objeto só será recriado se o 'token' mudar.
     const apiClient = useMemo(() => {
-        // console.log("Recriando apiClient..."); // (para debug)
         return axios.create({
             baseURL: API_URL,
             headers: { 'Authorization': `Bearer ${token}` }
         });
-    }, [token]); // <-- Dependência é o token
+    }, [token]);
 
-    // --- 3. CALLBACKS DEPENDENDO DO apiClient MEMORIZADO ---
-    // Esta função agora depende de 'apiClient' (que é estável)
-    // e 'logout' (que vem do contexto).
     const fetchTenants = useCallback(async () => {
         try {
             setLoadingTenants(true);
@@ -37,7 +31,7 @@ export const AdminPage = () => {
         } finally {
             setLoadingTenants(false);
         }
-    }, [apiClient, logout]); // 'apiClient' agora é estável
+    }, [apiClient, logout]);
 
     const fetchActiveSessions = useCallback(async (isFirstLoad = false) => {
         if (isFirstLoad) setLoadingSessions(true);
@@ -50,27 +44,22 @@ export const AdminPage = () => {
         } finally {
             if (isFirstLoad) setLoadingSessions(false);
         }
-    }, [apiClient, logout]); // 'apiClient' agora é estável
+    }, [apiClient, logout]);
 
-    // --- 4. useEffect DEPENDENDO DAS FUNÇÕES MEMORIZADAS ---
     useEffect(() => {
         fetchTenants();
-        fetchActiveSessions(true); // true = é a primeira carga
-
-        const intervalId = setInterval(() => {
-            fetchActiveSessions(false); // false = não é a primeira carga
-        }, 10000);
-
+        fetchActiveSessions(true);
+        const intervalId = setInterval(() => { fetchActiveSessions(false); }, 10000);
         return () => clearInterval(intervalId);
-    }, [fetchTenants, fetchActiveSessions]); // Agora estas funções são estáveis
+    }, [fetchTenants, fetchActiveSessions]);
 
-
+    // Funções handleApprove e handleSetStatus 
     const handleApprove = async (tenantId) => {
         if (!window.confirm('Tem certeza que deseja APROVAR e criar o schema para este tenant?')) return;
         try {
             await apiClient.post(`/admin/tenants/${tenantId}/approve`);
             alert('Tenant aprovado com sucesso!');
-            fetchTenants(); // Esta chamada agora é estável
+            fetchTenants(); // Re-busca a lista
         } catch (err) {
             alert('Erro ao aprovar: ' + err.response?.data?.message);
         }
@@ -81,7 +70,7 @@ export const AdminPage = () => {
         try {
             await apiClient.put(`/admin/tenants/${tenantId}/status`, { status: newStatus });
             alert('Status atualizado!');
-            fetchTenants(); // Esta chamada agora é estável
+            fetchTenants(); // Re-busca a lista
         } catch (err) {
             alert('Erro ao atualizar status: ' + err.response?.data?.message);
         }
@@ -89,42 +78,49 @@ export const AdminPage = () => {
 
     return (
         <Layout>
-            {/* Bloco de Gestão de Tenants */}
-            <h1 className="text-3xl font-bold mb-6">Gestão de Tenants</h1>
+            {/* --- Bloco de Gestão de Tenants  --- */}
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6">Gestão de Tenants</h1>
             <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-                {/* O loading só deve aparecer na primeira carga agora */}
                 {loadingTenants && <p className="p-4">Carregando tenants...</p>}
                 {error && <p className="p-4 text-red-600">{error}</p>}
 
-                {/* Se não estiver carregando e não houver erro, mostrar a tabela */}
                 {!loadingTenants && !error && (
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Logins</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {tenants.map((tenant) => (
-                                <tr key={tenant.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{tenant.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{tenant.admin_email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{tenant.login_count}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                    <ul className="divide-y divide-gray-200">
+                        <li className="hidden sm:grid sm:grid-cols-5 gap-x-4 items-center px-4 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div className="sm:col-span-1">Empresa</div>
+                            <div>Email</div>
+                            <div className="text-center sm:text-left">Logins</div>
+                            <div className="text-center sm:text-left">Status</div>
+                            <div className="text-center sm:text-left">Ações</div>
+                        </li>
+                        {tenants.map((tenant) => (
+                            <li key={tenant.id} className="p-4 sm:px-6 hover:bg-gray-50">
+                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-x-4 gap-y-2 items-center">
+                                    <div className="col-span-2 sm:col-span-1 font-medium text-gray-900 truncate">{tenant.name}</div>
+
+                                    <div className="text-sm text-gray-500 truncate col-span-2 sm:col-span-1">
+                                        <span className="font-semibold sm:hidden">Email: </span> {/* Rótulo para mobile */}
+                                        {tenant.admin_email || 'N/A'}
+                                    </div>
+
+                                    <div className="text-sm text-gray-500 text-right sm:text-left">
+                                        <span className="font-semibold sm:hidden">Logins: </span>
+                                        {tenant.login_count}
+                                    </div>
+
+                                    <div className="text-sm">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${tenant.status === 'active' ? 'bg-green-100 text-green-800' :
                                             tenant.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                                 'bg-red-100 text-red-800'
                                             }`}>
                                             {tenant.status}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    </div>
+
+                                    {/* Ações (Alinhado à direita na segunda linha do mobile) */}
+                                    <div className="col-start-2 sm:col-start-auto flex justify-end sm:justify-start space-x-2 text-sm font-medium">
                                         {tenant.status === 'pending' && (
-                                            <button onClick={() => handleApprove(tenant.id)} className="text-indigo-600 hover:text-indigo-900 mr-3">Aprovar</button>
+                                            <button onClick={() => handleApprove(tenant.id)} className="text-indigo-600 hover:text-indigo-900">Aprovar</button>
                                         )}
                                         {tenant.status === 'active' && (
                                             <button onClick={() => handleSetStatus(tenant.id, 'blocked')} className="text-red-600 hover:text-red-900">Bloquear</button>
@@ -132,49 +128,54 @@ export const AdminPage = () => {
                                         {tenant.status === 'blocked' && (
                                             <button onClick={() => handleSetStatus(tenant.id, 'active')} className="text-green-600 hover:text-green-900">Reativar</button>
                                         )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                        {tenants.length === 0 && !loadingTenants && (
+                            <li className="p-4 text-center text-gray-500 sm:col-span-5">Nenhum tenant encontrado.</li>
+                        )}
+                    </ul>
                 )}
             </div>
 
-            {/* --- Bloco "Quem está online?" --- */}
-            <h2 className="text-2xl font-bold mb-6">Usuários Ativos (Últimos 5 min)</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6">Usuários Ativos (Últimos 5 min)</h2>
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                 {loadingSessions && <p className="p-4">Carregando sessões...</p>}
 
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuário (Email)</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa (Tenant)</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Visto por Último</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {activeSessions.map((session) => (
-                            <tr key={session.id}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="inline-block h-3 w-3 rounded-full bg-green-500 mr-2"></span>
-                                    {session.email}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">{session.tenant_name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {new Date(session.last_seen).toLocaleTimeString('pt-BR')}
-                                </td>
-                            </tr>
-                        ))}
-                        {!loadingSessions && activeSessions.length === 0 && (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
-                                    Nenhum usuário ativo no momento.
-                                </td>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário (Email)</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa (Tenant)</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visto por Último</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {activeSessions.map((session) => (
+                                <tr key={session.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex items-center">
+                                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500 mr-2 shrink-0"></span>
+                                        <span className="truncate">{session.email}</span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{session.tenant_name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {new Date(session.last_seen).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </td>
+                                </tr>
+                            ))}
+
+                            {!loadingSessions && activeSessions.length === 0 && (
+                                <tr>
+                                    <td colSpan="3" className="px-6 py-4 text-center text-gray-500">
+                                        Nenhum usuário ativo no momento.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </Layout>
     );
