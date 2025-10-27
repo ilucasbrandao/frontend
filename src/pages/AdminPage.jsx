@@ -140,7 +140,7 @@ export const AdminPage = () => {
                 )}
             </div>
 
-            {/* --- Bloco "Quem está online?" (sem mudanças) --- */}
+            {/* --- Bloco "Quem está online?" --- */}
             <h2 className="text-2xl font-bold mb-6">Usuários Ativos (Últimos 5 min)</h2>
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                 {loadingSessions && <p className="p-4">Carregando sessões...</p>}

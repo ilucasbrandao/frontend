@@ -27,7 +27,7 @@ export const Layout = ({ children }) => {
                         {/* Logo e Links */}
                         <div className="flex items-center">
                             <div className="shrink-0">
-                                <span className="font-bold text-xl text-white">ERP {user?.schema}</span>
+                                <span className="font-bold text-xl text-white">ERP {user?.email}</span>
                             </div>
                             <div className="hidden md:block">
                                 <div className="ml-10 flex items-baseline space-x-4">
