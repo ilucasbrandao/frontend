@@ -23,9 +23,6 @@ const validateProduct = (formData) => {
         errors.name = 'Nome é obrigatório (mínimo 3 caracteres).';
     }
 
-    // SKU (Opcional, mas pode adicionar validações de formato se necessário)
-    // if (!formData.sku) { errors.sku = 'SKU é recomendado.'; }
-
     // Preço de Venda
     if (formData.price_cents === null || formData.price_cents === undefined || isNaN(formData.price_cents) || formData.price_cents < 0 || !Number.isInteger(formData.price_cents)) {
         errors.price_cents = 'Preço de Venda deve ser um número inteiro positivo (em centavos).';
@@ -37,7 +34,8 @@ const validateProduct = (formData) => {
     }
 
     // Estoque
-    if (formData.stock_quantity === null || formData.stock_quantity === undefined || isNaN(formData.stock_quantity) || formData.stock_quantity < 0 || !Number.isInteger(formData.stock_quantity)) {
+    const stockValue = formData.stock_quantity !== '' && formData.stock_quantity !== null ? Number(formData.stock_quantity) : null;
+    if (stockValue === null || isNaN(stockValue) || stockValue < 0 || !Number.isInteger(stockValue)) {
         errors.stock_quantity = 'Estoque deve ser um número inteiro não negativo.';
     }
 

@@ -1,4 +1,3 @@
-// src/hooks/useForm.js
 import { useState, useEffect, useCallback } from "react";
 
 /**
@@ -34,14 +33,27 @@ const useForm = (
   const handleChange = useCallback(
     (e) => {
       const { name, value, type, checked } = e.target;
-      const val = type === "checkbox" ? checked : value;
+      let finalValue;
+      if (type === "number") {
+        // Number('') retorna 0, o que é aceitável para estoque/preço
+        // parseFloat('') retorna NaN, o que pode ser problemático
+        finalValue = value === "" ? null : Number(value); // Ou trate '' como 0 se preferir: Number(value || 0)
+        // Adiciona checagem extra para garantir que não seja NaN se a conversão falhar
+        if (isNaN(finalValue)) {
+          finalValue = null; // Ou 0, dependendo da sua regra
+        }
+      } else if (type === "checkbox") {
+        finalValue = checked;
+      } else {
+        finalValue = value;
+      }
+
       setFormData((prev) => {
-        const newState = { ...prev, [name]: val };
+        const newState = { ...prev, [name]: finalValue };
 
         // Validação instantânea: executa a função de validação no novo estado
         const newErrors = validationFn(newState);
 
-        // Atualiza os erros de validação apenas para o campo que mudou (ou limpa se válido)
         if (newErrors[name]) {
           setValidationErrors((prevErrors) => ({
             ...prevErrors,
@@ -56,7 +68,7 @@ const useForm = (
         return newState;
       });
     },
-    [validationFn]
+    [validationFn, setValidationErrors]
   );
 
   const setFormValue = useCallback(

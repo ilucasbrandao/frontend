@@ -1,11 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
 import { LoginPage } from './pages/Login.jsx';
 import { ProductsPage } from './pages/Products/ProductsPage.jsx';
-import CustomersPage from './pages/CustomersPage.jsx'; // <-- NOVO
+import CustomersPage from './pages/Customers/CustomersPage.jsx';
 import { ProtectedRoute } from './components/ProtectedRoute.jsx';
 import { RegisterPage } from './pages/RegisterPage.jsx';
 import { AdminRoute } from './components/AdminRoute.jsx';
 import { AdminPage } from './pages/AdminPage.jsx';
+import { NewSalePage } from './pages/Sales/NewSalePage.jsx';
 
 function App() {
   return (
@@ -37,7 +38,16 @@ function App() {
         path="/customers"
         element={
           <ProtectedRoute>
-            <CustomersPage /> {/* <-- NOVO */}
+            <CustomersPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/sales/new"
+        element={
+          <ProtectedRoute>
+            <NewSalePage />
           </ProtectedRoute>
         }
       />

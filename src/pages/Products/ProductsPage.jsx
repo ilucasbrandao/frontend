@@ -4,14 +4,13 @@ import axios from 'axios';
 import { Layout } from '../../components/Layout';
 import { SlideOver } from '../../components/SlideOver';
 import ProductForm from '../../components/ProductForm';
-// Removido useNavigate pois não está sendo usado aqui
 import {
     TrashIcon,
     PencilSquareIcon,
     PlusIcon,
     ChevronRightIcon,
     ChevronLeftIcon,
-    ExclamationTriangleIcon // Adicionado para estoque baixo
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -84,7 +83,6 @@ export const ProductsPage = () => {
             };
             const response = await apiClient.get('/products', { params });
 
-            // CORRIGIDO: Usa 'data' e 'total' conforme o backend
             setProducts(response.data.data || []);
             setTotalCount(response.data.total || 0);
 
@@ -137,7 +135,8 @@ export const ProductsPage = () => {
     const handleSaveProduct = async (formData) => {
         const isEditing = !!editingProduct?.id; // Checa se tem ID no objeto
         setModalError(null); // Limpa erro anterior do modal
-        // Loading é gerenciado DENTRO do ProductForm via useForm
+        console.log('Dados a serem enviados para a API:', formData);
+
         try {
             const url = isEditing ? `/products/${editingProduct.id}` : '/products';
             const method = isEditing ? 'put' : 'post';
@@ -175,7 +174,14 @@ export const ProductsPage = () => {
     };
 
     // --- Funções Auxiliares ---
-    const formatPrice = (cents) => { /* ... seu formatPrice ... */ };
+    const formatPrice = (cents) => {
+        if (typeof cents !== 'number' || isNaN(cents)) {
+            console.log("formatPrice retornando default");
+            return 'R$ 0,00';
+        }
+        const formatted = (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        return formatted;
+    };
 
     const showSuccess = (message) => {
         setSuccessMessage(message);
@@ -265,7 +271,7 @@ export const ProductsPage = () => {
                             <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 gap-y-1 items-center">
                                 {/* Col 1: Nome, Status, SKU(mobile), Preço(mobile) */}
                                 <div className="truncate sm:col-span-1">
-                                    <p className='text-md font-medium text-blue-700 truncate'>
+                                    <p className='text-md font-medium text-blue-700 truncate text-left'>
                                         {product.name}
                                         {/* Badge de Status */}
                                         <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -276,9 +282,9 @@ export const ProductsPage = () => {
                                     <p className='text-sm text-gray-600 sm:hidden mt-1'>{formatPrice(product.price_cents)}</p>
                                 </div>
                                 {/* Col 2: SKU (sm+) */}
-                                <div className='hidden sm:block text-sm text-gray-500 truncate text-right'>{product.sku || 'N/A'}</div>
+                                <div className='hidden sm:block text-sm text-gray-500 truncate text-right '>{product.sku || 'N/A'}</div>
                                 {/* Col 3: Estoque (sm+) */}
-                                <div className='hidden sm:flex items-center justify-end text-sm text-gray-600'>
+                                <div className='hidden sm:flex items-center justify-end text-sm text-gray-600 text-right'>
                                     {product.stock_quantity}
                                     {product.stock_quantity <= lowStockThreshold && (
                                         <ExclamationTriangleIcon title={`Estoque baixo (${product.stock_quantity})`} className="h-4 w-4 text-red-500 ml-1.5 shrink-0" />

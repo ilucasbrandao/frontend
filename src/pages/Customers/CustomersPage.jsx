@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
-import { Layout } from "../components/Layout";
-import { SlideOver } from "../components/SlideOver";
-import CustomerForm from "../components/CustomerForm";
+import { Layout } from "../../components/Layout";
+import { SlideOver } from "../../components/SlideOver";
+import CustomerForm from "../../components/CustomerForm";
 import { useNavigate } from "react-router-dom";
 import {
     TrashIcon,
@@ -390,7 +390,7 @@ export default function CustomersPage() {
                 <CustomerForm
                     initialData={editingCustomer}
                     onSubmit={handleSaveCustomer}
-                    onClose={closeModal}
+                    onCancel={closeModal}
                     modalError={modalError}
                 />
             </SlideOver>
